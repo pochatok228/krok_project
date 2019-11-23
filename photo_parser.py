@@ -16,7 +16,7 @@ def main(search_param):
                                    lat=55.753960,
                                    long=37.620393,
                                    offset=offset,
-                                   radius=2000,
+                                   radius=10000,
                                    count=1000,
                                    v=5.103)['items']
         if not rit:
