@@ -15,9 +15,9 @@ def main(search_param):
 	data = vk_api.photos.search(q = search_param,
 					 	lat = 55.753960,
 					 	long = 37.620393,
-					 	offset = 14,
+					 	offset = 100,
 					 	radius = 20000,
-					 	count = 10,
+					 	count = 100,
 					 	v = 5.103)
 	# print(data)
 	# print(type(data))
@@ -61,10 +61,16 @@ def main(search_param):
 				# print(name[0])
 				district_name = name[0]
 				if district_name in districts_list:
-					districts_list[district_name].append(0)
-					print('FOUND',
-					district_list, districts_list[district_name]
-					)
+					
+					if districts_list[district_name] != []:
+						districts_list[district_name][-1] += 1
+					else:
+						districts_list[district_name].append(1)
+					
+					# print('FOUND',
+					# district_list, districts_list[district_name]
+					# )
+					# print(district_name, districts_list[district_name])
 		except Exception:
 			pass
 
