@@ -18,7 +18,7 @@ def main(search_param, offset, used_photos):
 					 	lat = 55.753960,
 					 	long = 37.620393,
 					 	offset = 50,
-					 	radius = 1000,
+					 	radius = 2000,
 					 	count = 1000,
 					 	v = 5.103)
 	# print(data)
@@ -126,7 +126,7 @@ def main(search_param, offset, used_photos):
 
 	# теперь парсим инстаграмм
 
-	
+
 
 	# print(array_for_return, used_photos)
 	return array_for_return, used_photos
