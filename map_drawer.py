@@ -4,13 +4,13 @@ import pandas as pd
 
 from flask import Flask
 from shapely.geometry import *
-
+from run import main as get_data
 app = Flask(__name__)
 
 # Loading GeoJson with MSK districts into gdf.
 fr = "mo.geojson"
 gdf = gpd.read_file(fr)
-pdf = pd.read_json("photo_coordinates.json", orient="records")
+pdf = pd.DataFrame.from_records(get_data("кафе ресторан забегаловка макдак KFC поел"))
 rdf = gpd.GeoDataFrame(pdf, geometry=gpd.points_from_xy(pdf.long, pdf.lat))
 
 poly_data = {}

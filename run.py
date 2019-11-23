@@ -1,6 +1,7 @@
 import photo_parser
 from pprint import pprint
 
+
 def main(phrase=input()):
     main_stats = []
     data_array = []
