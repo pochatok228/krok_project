@@ -1,0 +1,6 @@
+pandas
+vk
+geopandas
+folium
+pysal
+shapely
