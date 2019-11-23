@@ -1,6 +1,8 @@
 import vk
 import json 
 import requests
+# from instagram import Location
+from instagram.client import InstagramAPI
 
 
 Yandex_Maps_Api_Key = "14e21f26-a134-47c4-b005-62081335b783"
@@ -120,6 +122,11 @@ def main(search_param, offset, used_photos):
 	# print(len(items))
 	print(array_for_return)
 	"""
+
+
+	# теперь парсим инстаграмм
+
+	
 
 	# print(array_for_return, used_photos)
 	return array_for_return, used_photos
