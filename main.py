@@ -1,3 +1,6 @@
 import photo_parser
+import drawer
+
 phrase = input()
-photo_parser.main(phrase)
+stats = photo_parser.main(phrase)
+drawer.main(stats)

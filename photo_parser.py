@@ -16,8 +16,8 @@ def main(search_param):
 					 	lat = 55.753960,
 					 	long = 37.620393,
 					 	offset = 100,
-					 	radius = 20000,
-					 	count = 100,
+					 	radius = 1000,
+					 	count = 10,
 					 	v = 5.103)
 	# print(data)
 	# print(type(data))
@@ -35,8 +35,10 @@ def main(search_param):
 		request_text += "apikey={}&geocode={},{}&format=json".format(Yandex_Maps_Api_Key,
 														 item_long,
 														 item_lat)
-		# print(request_text)
+		print(request_text)
 		response = requests.get(request_text)
+		# print(response)
+		"""
 		try:
 			meta = response.json()['response']['GeoObjectCollection']['featureMember'][-6]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['Components']
 			# print(response['GeoObjectCollection']['featureMember']['GeoObject']['metaDataProperty']['GeocoderMetaData']['text'])
@@ -54,12 +56,19 @@ def main(search_param):
 				component_kind = component['kind']
 				if component_kind == 'district':
 					districts.append(component['name'])
+					"""
+		featureMember = response.json()['response']['GeoObjectCollection']['featureMember']
+		for meta_object in featureMember:
+			if 'район' in meta_object['GeoObject']['name']:
+				raion = meta_object['GeoObject']['name']
+				print(raion)
+				districts = [raion]
 		try:
 			if "район" in districts[-1]:
 				name = districts[-1].split()
 				name.pop(name.index('район'))
 				# print(name[0])
-				district_name = name[0]
+				district_name = ' '.join(name)
 				if district_name in districts_list:
 					
 					if districts_list[district_name] != []:
@@ -74,13 +83,17 @@ def main(search_param):
 		except Exception:
 			pass
 
+	array_for_return = []
 	for district in districts_list:
 		try:
 			if districts_list[district][-1] != 0:
 				print(district, districts_list[district][-1])
+				array_for_return.append((district, districts_list[district][-1]))
 		except Exception:
 			# print('EXCEPTED')
 			continue
 
 	# print(response.content.decode("utf-8"))
-	print(len(items))
+	# print(len(items))
+	print(array_for_return)
+	return array_for_return
