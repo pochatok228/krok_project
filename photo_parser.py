@@ -5,7 +5,7 @@ import requests
 
 Yandex_Maps_Api_Key = "14e21f26-a134-47c4-b005-62081335b783"
 
-def main(search_param):
+def main(search_param, offset, used_photos):
 	with open('districts.json', 'r', encoding='utf-8') as file:
 		districts_list = json.load(file)
 	# print(districts_list)
@@ -15,22 +15,45 @@ def main(search_param):
 	data = vk_api.photos.search(q = search_param,
 					 	lat = 55.753960,
 					 	long = 37.620393,
-					 	offset = 100,
+					 	offset = 50,
 					 	radius = 1000,
-					 	count = 10,
+					 	count = 1000,
 					 	v = 5.103)
 	# print(data)
 	# print(type(data))
 	# data = json.loads(data)
+	array_for_return = []
 	items = data['items']
+	counter = 0
+	# print(data)
+	# with open('data.json', 'w') as file:
+	# 	json.dump(data, file)
 	for item in items:
-		item_lat = item['lat']
-		item_long = item['long']
+		# print(item)
+		try:
+			item_lat = item['lat']
+			item_long = item['long']
+			if item['id'] in used_photos:
+				continue
+			else:
+				# print("Found Deda")
+				used_photos.append(item['id'])
+
+				# print(item_lat, item_long )
+				if item['sizes'] != []:
+					url = item['sizes'][0]["url"]
+				else:
+					url = 'None'
+				array_for_return.append({"url": url, "lat": item_lat, "long": item_long})
+		
+		except Exception as e:
+			print(e)
+		
+
 		# print(item_lat, item_long)
 
 
-		
-
+		"""
 		request_text = "https://geocode-maps.yandex.ru/1.x/?"
 		request_text += "apikey={}&geocode={},{}&format=json".format(Yandex_Maps_Api_Key,
 														 item_long,
@@ -38,7 +61,7 @@ def main(search_param):
 		print(request_text)
 		response = requests.get(request_text)
 		# print(response)
-		"""
+		
 		try:
 			meta = response.json()['response']['GeoObjectCollection']['featureMember'][-6]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['Components']
 			# print(response['GeoObjectCollection']['featureMember']['GeoObject']['metaDataProperty']['GeocoderMetaData']['text'])
@@ -56,7 +79,7 @@ def main(search_param):
 				component_kind = component['kind']
 				if component_kind == 'district':
 					districts.append(component['name'])
-					"""
+					
 		featureMember = response.json()['response']['GeoObjectCollection']['featureMember']
 		for meta_object in featureMember:
 			if 'район' in meta_object['GeoObject']['name']:
@@ -96,4 +119,7 @@ def main(search_param):
 	# print(response.content.decode("utf-8"))
 	# print(len(items))
 	print(array_for_return)
-	return array_for_return
+	"""
+
+	# print(array_for_return, used_photos)
+	return array_for_return, used_photos

@@ -1,5 +1,7 @@
 from PIL import Image
 import random
+import json
+import requests
 
 MOST_EAST_LONG = round(37.983968, 4)
 MOST_WEST_LONG = round(37.295857, 4)
@@ -20,24 +22,27 @@ print(LONG_LAT, LONG_LEN)
 
 img = Image.new("RGB", (int(LONG_LAT), int(LONG_LEN)), (255, 255, 255))
 
-img.show()
-obj = img.load()
+# img.show()
+
 
 for smesh_len in range(int(LONG_LEN)):
 	for smesh_lat in range(int(LONG_LAT)):
 
-		item_long = MOST_WEAST_LONG + smesh_len / 10000
+		item_long = MOST_WEST_LONG + smesh_len / 10000
 		item_lat = MOST_SOUTH_LAT + smesh_lat / 10000
 		request_text = "https://geocode-maps.yandex.ru/1.x/?"
 		request_text += "apikey={}&geocode={},{}&format=json".format(Yandex_Maps_Api_Key,
 														 item_long,
 														 item_lat)
+		response = requests.get(request_text)
 		featureMember = response.json()['response']['GeoObjectCollection']['featureMember']
 		for meta_object in featureMember:
-			if 'район' in meta_object['GeoObject']['name']:
+			if 'район' in meta_object['GeoObject']['name'] and 'микрорайон' not in meta_object['GeoObject']['name']:
 				raion = meta_object['GeoObject']['name']
 				print(raion)
 				districts = [raion]
+			else:
+				continue
 		try:
 			if "район" in districts[-1]:
 				name = districts[-1].split()
@@ -55,5 +60,16 @@ for smesh_len in range(int(LONG_LEN)):
 							continue
 						else:
 							break
+						img.putpixel(
+					((item_long - MOST_WEST_LONG) * 10000,
+					 (item_lat - MOST_SOUTH_LAT) * 1000),
+					 color)
 					used_districts[districts_name] = color
-		img.putpixel()
+					print("painted")
+		except Exception as e:
+			#  print(e)
+			pass
+
+
+
+img.show()

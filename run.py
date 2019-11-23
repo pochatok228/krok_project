@@ -12,5 +12,7 @@ stats3, used_photos = photo_parser.main(phrase, 1000, used_photos)
 # main_stats = main_stats + stats
 stats4, used_photos = photo_parser.main(phrase, 10000, used_photos)
 # main_stats = main_stats + stats
-print(stats1 + stats2 + stats3 + stats4)
+
+
+with open('photo_coordinates.json')
 # drawer.main(stats)
