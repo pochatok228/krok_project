@@ -41,7 +41,7 @@ def main(search_param, offset, used_photos):
 
 				# print(item_lat, item_long )
 				if item['sizes'] != []:
-					url = item['sizes'][0]["url"]
+					url = item['sizes'][-1]["url"]
 				else:
 					url = 'None'
 				array_for_return.append({"url": url, "lat": item_lat, "long": item_long})
