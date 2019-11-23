@@ -1,5 +1,4 @@
 import photo_parser
-import drawer
 import json
 
 
