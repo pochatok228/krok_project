@@ -2,7 +2,7 @@ import photo_parser
 from pprint import pprint
 
 
-def main(phrase=input()):
+def main(phrase):
     main_stats = []
     data_array = []
     used_photos = []
@@ -19,4 +19,4 @@ def main(phrase=input()):
 
 
 if __name__ == '__main__':
-    pprint(len(main()))
+    pprint(main(input()))

@@ -29,8 +29,11 @@ def main(search_param):
     for item in items:
         # print(item)
         try:
-            item_lat = item['lat']
-            item_long = item['long']
+            item_lat = item.get("lat")
+            item_long = item.get("long")
+
+            if not item_lat or not item_long:
+                continue
 
             # print(item_lat, item_long )
             if item['sizes']:
@@ -40,7 +43,7 @@ def main(search_param):
             array_for_return.append({"url": url, "lat": item_lat, "long": item_long})
 
         except Exception as e:
-            print(e)
+            print("FUCK:", e)
 
     # теперь парсим инстаграмм
 
