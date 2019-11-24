@@ -1,15 +1,14 @@
-import sys
-
 import folium
+import branca
+import datetime
+
 import geopandas as gpd
-import numba
 import pandas as pd
-from flask import Flask, request, jsonify, url_for
+from celery import Celery
+from flask import Flask, request, jsonify, url_for, render_template
 from shapely.geometry import *
 
 from run import main as get_data
-from celery import Celery
-
 
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
@@ -17,7 +16,6 @@ app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
-
 
 # Loading GeoJson with MSK districts into gdf.
 fr = "mo.geojson"
@@ -39,12 +37,17 @@ print("---------- / GDF is ready. / ----------")
 #             break
 
 @celery.task(bind=True)
-def get_gpdata(self, tag="кофе"):
+def get_gpdata(self, tag="кофе", radius=25000, since=datetime.datetime(2010, 1, 1).timestamp()):
     tot = len(geo)
     self.update_state(state='PROGRESS',
                       meta={'current': 0, 'total': tot,
                             'status': "Парсим посты ВК... "})
-    pdf = pd.DataFrame.from_records(get_data(tag))
+    pdf = pd.DataFrame.from_records(get_data(tag, radius, since))
+    try:
+        pdf.long
+    except AttributeError:
+        return {'current': tot, 'total': tot, 'status': 'Ключевое слово не обнаружено.',
+                'result': ''}
     rdf = gpd.GeoDataFrame(pdf, geometry=gpd.points_from_xy(pdf.long, pdf.lat))
 
     self.update_state(state='PROGRESS',
@@ -61,7 +64,7 @@ def get_gpdata(self, tag="кофе"):
                 rdf.drop(k, inplace=True)
         poly_data.append([r2.NAME, num])
         self.update_state(state='PROGRESS',
-                          meta={'current': z+1, 'total': tot,
+                          meta={'current': z + 1, 'total': tot,
                                 'status': "Обработано районов: "})
 
     return {'current': tot, 'total': tot, 'status': 'Обработка завершена! ',
@@ -70,9 +73,10 @@ def get_gpdata(self, tag="кофе"):
 
 @app.route('/map/kick')
 def kick_map():
-    task = get_gpdata.apply_async(args=[request.args.get("tag")])
-    return jsonify({}), 202, {'Location': url_for('taskstatus',
-                                                  task_id=task.id)}
+    task = get_gpdata.apply_async(kwargs=request.args)
+    return jsonify({"redirect": url_for('taskstatus',
+                                        task_id=task.id)}), 202, {'Location': url_for('taskstatus',
+                                                                                      task_id=task.id)}
 
 
 @app.route('/map/status/<task_id>')
@@ -111,18 +115,36 @@ def i_map(task_id):
     task = get_gpdata.AsyncResult(task_id)
     poly_data = pd.DataFrame(task.info["result"], columns=["district", "num"])
     # Convert the GeoDataFrame to WGS84 coordinates
+    colorscale = branca.colormap.linear.YlOrRd_09.scale(0, 50e3)
+
+    def style_function(feature):
+        return {
+            'fillOpacity': 0.5,
+            'weight': 0,
+            'fillColor': colorscale
+        }
+
     map_data = folium.features.Choropleth(geo_data=geo, data=poly_data, columns=["district", "num"],
                                           key_on="feature.properties.NAME",
-                                          fill_color='YlOrRd',
+                                          fill_color='YlOrBr',
                                           fill_opacity=0.6,
-                                          legend_name='Кол-во результатов по запросу (точек): ')
+                                          legend_name='Кол-во результатов по запросу (точек): ',
+                                          highlight=True)
 
     # Initializing Folium map
     mmap = folium.Map((55.75, 37.61), zoom_start=10)
 
+    map_data.layer_name = "Данные"
     mmap.add_child(map_data)
+    folium.LayerControl().add_to(mmap)
+    # folium.plugins.Fullscreen().add_to(mmap)
 
     return mmap._repr_html_()
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 if __name__ == '__main__':

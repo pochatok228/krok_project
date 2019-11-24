@@ -1,22 +1,20 @@
 import json
-
+import datetime
 import vk
 
 
-def main(search_param):
-    with open('districts.json', 'r', encoding='utf-8') as file:
-        districts_list = json.load(file)
-    # print(districts_list)
-    session = vk.Session(access_token='bbb8c82cbbb8c82cbbb8c82c18bbd6ef60bbbb8bbb8c82ce6608e35886c40fa8a7df573')
+def main(search_param, radius=10000, start_time=datetime.datetime(2018, 1, 1)):
+    session = vk.Session(access_token='b544a0a6b544a0a6b544a0a612b52a8e99bb544b544a0a6e89e283e80e3120d48417cfc')
     vk_api = vk.API(session)
     items = []
     offset = 0
     while True:
         rit = vk_api.photos.search(q=search_param,
-                                   lat=55.753960,
-                                   long=37.620393,
+                                   lat=55.620947,
+                                   long=37.473815,
                                    offset=offset,
-                                   radius=10000,
+                                   radius=radius,
+                                   start_time=start_time,
                                    count=1000,
                                    v=5.103)['items']
         if not rit:
@@ -44,8 +42,6 @@ def main(search_param):
 
         except Exception as e:
             print("FUCK:", e)
-
-    # теперь парсим инстаграмм
 
     # print(array_for_return, used_photos)
     return array_for_return

@@ -1,45 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-	<title>TAG.map</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-	<link href="https://fonts.googleapis.com/css?family=Montserrat+Alternates&display=swap" rel="stylesheet">
-<!--===============================================================================================-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>tag.map</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 </head>
-<body style="background-color: white;">
+<body>
+<section class="section">
+    <div class="container">
+        <h1 class="title">
+            Генератор Heatmap-ов по ключевым словам
+        </h1>
+        <p class="subtitle">
+            Версия <strong>v0.1-alpha</strong>. Работает только поиск по ВК
+        </p>
+    </div>
+</section>
+<section>
+    <div class="container">
+        <div class="field">
+            <div class="control">
+                <label>
+                    <input id="get_tag" class="input is-primary" type="text" placeholder="Введите ключевые слова">
+                </label>
+            </div>
+        </div>
+        <div class="control">
+            <button onclick="load_data()" class="button is-info">
+                Искать
+            </button>
+        </div>
+        <br>
+        <progress id="progress" class="progress is-small is-primary is-centered" max="100" style="visibility: hidden">
+            15%
+        </progress>
+        <p class="subtitle" id="progress_title">
 
-	<div class="main" style="background-color: black; width: 35%">
-		
-		<form class="project_name validate-form">
-			<span class="title" style="font-size: 75px; margin-bottom: 50%; color: white;">
-				TAG.map
-			</span>	
-			<div class="wrap-input100 validate-input" data-validate="Tag is required">
-				<input class="input100" type="text" name="name" placeholder="input tags...">
-				<span class="focus-input100"></span>
-			</div>
+        </p>
+        <iframe id="map" style="height: 60vh; width: 72.5vw">
+        </iframe>
 
-			<div class="container-contact100-form-btn">
-				<div class="wrap-contact100-form-btn">
-					<div class="contact100-form-bgbtn"></div>
-					<button class="contact100-form-btn">
-						Search
-					</button>
-				</div>
-			</div>
-		</form>
-	</div>
+    </div>
+</section>
+<section>
+    <div class="container">
+
+    </div>
+</section>
+<script>
+    // Get the input field
+    let input = document.getElementById("get_tag");
+
+    // Execute a function when the user releases a key on the keyboard
+    input.addEventListener("keyup", function (event) {
+        // Number 13 is the "Enter" key on the keyboard
+        if (event.keyCode === 13) {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            // Trigger the button element with a click
+            load_data()
+        }
+    });
+
+    function get_json(url, callback) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'json';
+        xhr.onload = function () {
+            let status = xhr.status;
+            if (status === 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status, xhr.response);
+            }
+        };
+        xhr.send();
+    }
+
+    function load_data() {
+        let tag = document.getElementById("get_tag").value;
+        console.log(tag);
+        const b_url = "";
+        get_json(b_url + "/map/kick?tag=" + tag, function (status, data) {
+            if (status !== 202) {
+                alert('Something went wrong 1: ' + status);
+            } else {
+                console.log(data);
+
+                let lid = setInterval(function (){
+                    get_json(data.redirect, function (status, data) {
+                        if (status !== null) {
+                            alert('Something went wrong 2: ' + status);
+                        } else {
+                            console.log(data);
+                            let progress_bar = document.getElementById("progress");
+                            progress_bar.max = data.total;
+                            progress_bar.value = data.current;
 
 
+                            let progress_title = document.getElementById("progress_title");
+
+                            progress_bar.style.visibility = "visible";
+                            progress_title.innerText = data.status+data.current+"/"+data.total;
+
+                            if (data.ready_url) {
+                                console.log(data.ready_url);
+                                clearInterval(lid);
+
+                                document.getElementById("map").src = data.ready_url;
+                            }
+
+                        }
+                    })
+                }, 250)
+            }
+        })
 
 
-
-
-
+    }
+</script>
 </body>
 </html>
