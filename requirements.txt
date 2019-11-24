@@ -4,3 +4,6 @@ geopandas
 folium
 pysal
 shapely
+numba
+celery
+redis
