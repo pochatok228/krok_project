@@ -7,7 +7,8 @@ def main(phrase, radius=10000, start_time=datetime.datetime(2018, 1, 1)):
     main_stats = []
     data_array = []
     used_photos = []
-    search_words = phrase.split()
+    search_words = phrase.split(";")
+    print(search_words)
 
     for search_word in search_words:
 
