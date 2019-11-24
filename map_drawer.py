@@ -64,8 +64,6 @@ def get_gpdata(self, tag="кофе"):
                           meta={'current': z+1, 'total': tot,
                                 'status': "Обработано районов: "})
 
-    poly_data = pd.DataFrame(poly_data, columns=["district", "num"])
-
     return {'current': tot, 'total': tot, 'status': 'Обработка завершена! ',
             'result': poly_data}
 
@@ -79,7 +77,7 @@ def kick_map():
 
 @app.route('/map/status/<task_id>')
 def taskstatus(task_id):
-    task = kick_map.AsyncResult(task_id)
+    task = get_gpdata.AsyncResult(task_id)
     if task.state == 'PENDING':
         # job did not start yet
         response = {
@@ -96,7 +94,7 @@ def taskstatus(task_id):
             'status': task.info.get('status', '')
         }
         if 'result' in task.info:
-            response['ready_url'] = url_for(i_map, task_id=task_id)
+            response['ready_url'] = url_for('i_map', task_id=task_id)
     else:
         # something went wrong in the background job
         response = {
@@ -110,10 +108,10 @@ def taskstatus(task_id):
 
 @app.route("/map/<task_id>")
 def i_map(task_id):
-    task = kick_map.AsyncResult(task_id)
-
+    task = get_gpdata.AsyncResult(task_id)
+    poly_data = pd.DataFrame(task.info["result"], columns=["district", "num"])
     # Convert the GeoDataFrame to WGS84 coordinates
-    map_data = folium.features.Choropleth(geo_data=geo, data=task.info["result"], columns=["district", "num"],
+    map_data = folium.features.Choropleth(geo_data=geo, data=poly_data, columns=["district", "num"],
                                           key_on="feature.properties.NAME",
                                           fill_color='YlOrRd',
                                           fill_opacity=0.6,
